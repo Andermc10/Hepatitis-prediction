@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediccion de Hepatitis - Sistema Avanzado</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sistema de Prediccion de Hepatitis</h1>
+            <p class="subtitle">Modelo de Machine Learning con Diagnostico Integrado</p>
+        </div>
+
+        <div class="system-info">
+            <h3>Instrucciones</h3>
+            <p>Ingresa los valores de las 21 variables medicas. El sistema detectara automaticamente si hay problemas con el modelo y ajustara la prediccion.</p>
+        </div>
+        
+        <form action="/predict" method="POST" class="hepatitis-form">
+            <div class="form-grid">
+                {% for feature in [
+                    'Age', 'Sex', 'Estado_Civil', 'Ciudad', 'Steroid', 'Antivirals',
+                    'Fatigue', 'Malaise', 'Anorexia', 'Liver_Big', 'Liver_Firm',
+                    'Spleen_Palpable', 'Spiders', 'Ascites', 'Varices', 'Bilirubin',
+                    'Alk_Phosphate', 'Sgot', 'Albumin', 'Protime', 'Histology'
+                ] %}
+                <div class="form-group">
+                    <label for="{{ feature }}">{{ feature }}:</label>
+                    <input type="number" step="any" id="{{ feature }}" name="{{ feature }}" 
+                           placeholder="Valor para {{ feature }}" required
+                           title="Ingrese el valor numerico para {{ feature }}">
+                    <small class="field-info">
+                        {% if feature in ['Age', 'Bilirubin', 'Alk_Phosphate', 'Sgot', 'Albumin', 'Protime'] %}
+                            Valor decimal
+                        {% else %}
+                            Entero (1, 2, etc.)
+                        {% endif %}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="predict-btn">Predecir Hepatitis</button>
+                <button type="button" class="test-btn" onclick="fillTestData()">
+                    Datos de Prueba
+                </button>
+                <button type="reset" class="clear-btn">Limpiar</button>
+            </div>
+        </form>
+
+        {% if show_result %}
+            <div class="result-container">
+                {% if prediction %}
+                    <div class="result {% if prediction == 'HEPATITIS' %}result-positive{% else %}result-negative{% endif %}">
+                        <h3>Resultado de la Prediccion</h3>
+                        
+                        {% if problem_detected %}
+                            <div class="warning-banner">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <strong>Diagnostico Final:</strong>
+                                <span class="diagnosis {{ 'hepatitis' if prediction == 'HEPATITIS' else 'no-hepatitis' }}">
+                                    {{ prediction }}
+                                </span>
+                            </div>
+                            
+                            <div class="result-item">
+                                <strong>Prediccion Original:</strong>
+                                <span>{{ prediction_original }}</span>
+                            </div>
+                            
+                            <div class="result-item">
+                                <strong>Probabilidad Hepatitis:</strong>
+                                <span class="probability">{{ probability_positive }}</span>
+                            </div>
+                            
+                            <div class="result-item">
+                                <strong>Probabilidad No Hepatitis:</strong>
+                                <span class="probability">{{ probability_negative }}</span>
+                            </div>
+                            
+                            <div class="result-item">
+                                <strong>Confianza:</strong>
+                                <span class="confidence">{{ confidence }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if problem_detected %}
+                            <div class="technical-info">
+                                <h4>Informacion Tecnica</h4>
+                                <p>El modelo presenta posible desbalance. Se aplicaron estrategias correctivas.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% elif error %}
+                    <div class="result error">
+                        <h3>Error en la Prediccion</h3>
+                        <p>{{ error }}</p>
+                        <p>Verifica que todos los campos esten completos y tengan valores validos.</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="api-info">
+            <h3>Endpoints API Disponibles</h3>
+            <div class="endpoints">
+                <div class="endpoint">
+                    <strong>GET</strong> <code>/health</code> - Estado del sistema
+                </div>
+                <div class="endpoint">
+                    <strong>GET</strong> <code>/diagnostic</code> - Diagnostico del modelo
+                </div>
+                <div class="endpoint">
+                    <strong>GET</strong> <code>/features</code> - Lista de variables
+                </div>
+                <div class="endpoint">
+                    <strong>POST</strong> <code>/api/predict</code> - Prediccion (JSON)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fillTestData() {
+            const testData = {
+                'Age': 45,
+                'Sex': 1,
+                'Estado_Civil': 1,
+                'Ciudad': 1,
+                'Steroid': 2,
+                'Antivirals': 1,
+                'Fatigue': 2,
+                'Malaise': 1,
+                'Anorexia': 2,
+                'Liver_Big': 2,
+                'Liver_Firm': 1,
+                'Spleen_Palpable': 2,
+                'Spiders': 1,
+                'Ascites': 2,
+                'Varices': 1,
+                'Bilirubin': 5.5,
+                'Alk_Phosphate': 180,
+                'Sgot': 120,
+                'Albumin': 3.0,
+                'Protime': 35,
+                'Histology': 2
+            };
+            
+            for (const [key, value] of Object.entries(testData)) {
+                const input = document.getElementById(key);
+                if (input) {
+                    input.value = value;
+                }
+            }
+            
+            alert('Datos de prueba cargados. Ahora haz clic en "Predecir Hepatitis"');
+        }
+    </script>
+</body>
+</html>
