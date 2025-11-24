@@ -47,7 +47,7 @@
                 <button type="button" class="test-btn" onclick="fillTestData()">
                     Datos de Prueba
                 </button>
-                <button type="reset" class="clear-btn">Limpiar</button>
+                <button type="button" class="clear-btn" onclick="clearForm()">Limpiar</button>
             </div>
         </form>
 
@@ -162,6 +162,10 @@
             }
             
             alert('Datos de prueba cargados. Ahora haz clic en "Predecir Hepatitis"');
+        }
+        
+        function clearForm() {
+            window.location.href = '/';
         }
     </script>
 </body>
